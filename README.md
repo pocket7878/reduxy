@@ -235,3 +235,7 @@ class FirstFragment : Fragment() {
     ...
 }
 ```
+
+# Special thanks
+
+Redux like architecture design idea is inspired by [RettyEng/redux-kt](https://github.com/RettyEng/redux-kt).
