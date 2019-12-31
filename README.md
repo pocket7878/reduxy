@@ -2,9 +2,31 @@
 
 Reduxy like architecture for Android.
 
-# Architecture
-
 ![architecture](https://raw.githubusercontent.com/pocket7878/reduxy/master/docs/crew_android_redux_flow.png)
+
+# Usage
+
+Add maven repository into your `build.gradle`:
+
+```
+repositories {
+    ...
+    jcenter()
+    ...
+}
+```
+
+Add dependency into your application-level `build.gradle`
+
+```
+dependencies {
+    ...
+    implementation 'jp.pocket7878.reduxy:reduxy:0.0.1'
+    ...
+}
+```
+
+# Architecture
 
 ## StateType
 
