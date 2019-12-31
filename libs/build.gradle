@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.novoda.bintray-release'
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -36,4 +38,13 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+}
+
+publish {
+    userOrg = ''
+    groupId = 'jp.pocket7878.reduxy'
+    artifactId = 'reduxy'
+    publishVersion = "0.0.1"
+    desc = 'Redux like architecture for Android'
+    website = 'https://github.com/pocket7878/reduxy'
 }
