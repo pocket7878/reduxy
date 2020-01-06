@@ -1,6 +1,10 @@
 package jp.pocket7878.redux.libs
 
+import android.os.Handler
+import android.os.Looper
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import jp.pocket7878.redux.libs.reducer.Dispatcher
@@ -15,9 +19,8 @@ interface StateFactory<T : StateType> {
 class Store<T : StateType, N : Navigation<T, E>, E : ErrorTag>(
     private val initialStateFactory: StateFactory<T>,
     private val reducer: Reducer<T, N, E>,
-    private val middlewares: List<Middleware<T, N, E>>
+    middlewares: List<Middleware<T, N, E>>
 ) {
-
     //region Lock
     private val lock = ReentrantLock()
 
@@ -41,6 +44,7 @@ class Store<T : StateType, N : Navigation<T, E>, E : ErrorTag>(
     //endregion
 
     //region State
+    private val actions: PublishSubject<Action<T, N, E>> = PublishSubject.create()
     private val state: BehaviorSubject<T> =
         BehaviorSubject.createDefault(initialStateFactory.create())
     private val observable: Observable<T> = state.hide()
@@ -72,7 +76,7 @@ class Store<T : StateType, N : Navigation<T, E>, E : ErrorTag>(
         }
 
     fun dispatch(action: Action<T, N, E>) {
-        _dispatch(action)
+        this.actions.onNext(action)
     }
     //endregion
 
@@ -104,4 +108,10 @@ class Store<T : StateType, N : Navigation<T, E>, E : ErrorTag>(
         this.dispatch(ErrorEntry(tag, cause, extras, recoverAction))
     }
     //endregion
+
+    init {
+        actions.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { this._dispatch(it) }
+    }
 }

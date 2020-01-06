@@ -1,9 +1,11 @@
 package jp.pocket7878.redux.libs
 
+import io.reactivex.android.plugins.RxAndroidPlugins
+import io.reactivex.plugins.RxJavaPlugins
+import io.reactivex.schedulers.Schedulers
 import jp.pocket7878.redux.libs.reducer.compose
 import org.junit.Before
 import org.junit.Test
-import kotlin.RuntimeException
 
 class ReduxTest {
     lateinit var reducer: TestReducer
@@ -12,6 +14,17 @@ class ReduxTest {
 
     @Before
     fun setUp() {
+        //Setup Schedulers
+        RxAndroidPlugins.reset()
+        RxJavaPlugins.reset()
+        RxJavaPlugins.setIoSchedulerHandler {
+            Schedulers.trampoline()
+        }
+        RxAndroidPlugins.setInitMainThreadSchedulerHandler {
+            Schedulers.trampoline()
+        }
+
+        //Reinitialize store
         reducer = TestReducer()
         middleware = TestMiddleware()
         store = Store(
@@ -85,9 +98,9 @@ class ReduxTest {
 
     @Test
     fun dispatchIncrementActionIncrementCounter() {
-        store.dispatch(TestAction.Increment())
+        val testObserver = store.state().skip(1).test()
 
-        val testObserver = store.state().test()
+        store.dispatch(TestAction.Increment())
         testObserver.assertValue {
             it.counter == 1
         }
