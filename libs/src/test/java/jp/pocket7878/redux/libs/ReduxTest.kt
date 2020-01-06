@@ -41,7 +41,7 @@ class ReduxTest {
 
     @Test
     fun onErrorCallsMiddleware() {
-        store.onError(TestErrorTag.ERROR, null)
+        store.onError(TestErrorTag.ERROR1, null)
         assert(middleware.dispatcherCalled)
     }
     //endregion
@@ -66,7 +66,7 @@ class ReduxTest {
 
     @Test
     fun onErrorNotCallsReducer() {
-        store.onError(TestErrorTag.ERROR, null)
+        store.onError(TestErrorTag.ERROR1, null)
         assert(!reducer.runCalled)
     }
     //endregion
@@ -94,6 +94,37 @@ class ReduxTest {
 
         testObserver.dispose()
     }
+
+    @Test
+    fun dispatchNotAffectToNavigation() {
+        val testObserver = store.navigation().test()
+        store.dispatch(TestAction.Increment())
+        testObserver.assertEmpty()
+        testObserver.dispose()
+    }
+
+    @Test
+    fun dispatchNotAffectToErrors() {
+        val testObserver = store.errors().test()
+        store.dispatch(TestAction.Increment())
+        testObserver.assertEmpty()
+        testObserver.dispose()
+    }
+
+    @Test
+    fun dispatchInvokeAsyncAction() {
+        store.dispatch(AsyncAction {
+            store.dispatch(TestAction.Increment())
+            store.dispatch(TestAction.Increment())
+        })
+
+        val testObserver = store.state().test()
+        testObserver.assertValue {
+            it.counter == 2
+        }
+
+        testObserver.dispose()
+    }
     //endregion
 
     //region navigation
@@ -108,6 +139,28 @@ class ReduxTest {
 
         testObserver.dispose()
     }
+
+    @Test
+    fun navigateNotAffectToState() {
+        val testObserver = store.state().skip(1).test()
+
+        val dummyNav = TestNavigation.Nav()
+
+        store.navigate(dummyNav)
+        testObserver.assertEmpty()
+
+        testObserver.dispose()
+    }
+
+    @Test
+    fun navigateNotAffectToErrors() {
+        val testObserver = store.state().skip(1).test()
+
+        store.onError(TestErrorTag.ERROR1, null)
+        testObserver.assertEmpty()
+
+        testObserver.dispose()
+    }
     //endregion
 
     //region error
@@ -115,9 +168,9 @@ class ReduxTest {
     fun onErrorTagObservableFromErrors() {
         val testObserver = store.errors().test()
 
-        store.onError(TestErrorTag.ERROR, null)
+        store.onError(TestErrorTag.ERROR1, null)
         testObserver.assertValue {
-            it.tag == TestErrorTag.ERROR
+            it.tag == TestErrorTag.ERROR1
         }
 
         testObserver.dispose()
@@ -127,7 +180,7 @@ class ReduxTest {
     fun onErrorCauseObservableFromErrors() {
         val testObserver = store.errors().test()
 
-        store.onError(TestErrorTag.ERROR, RuntimeException("Happy Hacking"))
+        store.onError(TestErrorTag.ERROR1, RuntimeException("Happy Hacking"))
         testObserver.assertValue {
             it.cause is RuntimeException && it.cause?.message == "Happy Hacking"
         }
@@ -139,11 +192,67 @@ class ReduxTest {
     fun onErrorExtrasObservableFromErrors() {
         val testObserver = store.errors().test()
 
-        store.onError(TestErrorTag.ERROR, null, extras = 10)
+        store.onError(TestErrorTag.ERROR1, null, extras = 10)
         testObserver.assertValue {
             it.extras == 10
         }
 
+        testObserver.dispose()
+    }
+
+    @Test
+    fun errorsSelectTag() {
+        var testObserver = store.errors(TestErrorTag.ERROR1).test()
+
+        store.onError(TestErrorTag.ERROR1, null)
+        testObserver.assertValue {
+            it.tag == TestErrorTag.ERROR1
+        }
+
+        testObserver.dispose()
+
+        testObserver = store.errors(TestErrorTag.ERROR2).test()
+
+        store.onError(TestErrorTag.ERROR1, null)
+        testObserver.assertEmpty()
+
+        testObserver.dispose()
+    }
+
+    @Test
+    fun errorsSelectTagList() {
+        var testObserver = store.errors(arrayOf<ErrorTag>(TestErrorTag.ERROR1)).test()
+
+        store.onError(TestErrorTag.ERROR1, null)
+        testObserver.assertValue {
+            it.tag == TestErrorTag.ERROR1
+        }
+
+        testObserver.dispose()
+
+        testObserver = store.errors(arrayOf<ErrorTag>(TestErrorTag.ERROR2)).test()
+
+        store.onError(TestErrorTag.ERROR1, null)
+        testObserver.assertEmpty()
+
+        testObserver.dispose()
+    }
+
+    @Test
+    fun onErrorNotAffectToState() {
+        var testObserver = store.state().skip(1).test()
+
+        store.onError(TestErrorTag.ERROR1, null)
+        testObserver.assertEmpty()
+        testObserver.dispose()
+    }
+
+    @Test
+    fun onErrorNotAffectToNavigate() {
+        var testObserver = store.navigation().test()
+
+        store.onError(TestErrorTag.ERROR1, null)
+        testObserver.assertEmpty()
         testObserver.dispose()
     }
     //endregion

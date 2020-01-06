@@ -14,7 +14,8 @@ class TestStateFactory() : StateFactory<TestState> {
 }
 
 enum class TestErrorTag : ErrorTag {
-    ERROR
+    ERROR1,
+    ERROR2
 }
 
 interface TestNavigation : Navigation<TestState, TestErrorTag> {
