@@ -44,7 +44,7 @@ publish {
     userOrg = ''
     groupId = 'jp.pocket7878.reduxy'
     artifactId = 'reduxy'
-    publishVersion = "0.0.1"
+    publishVersion = "0.0.2"
     desc = 'Redux like architecture for Android'
     website = 'https://github.com/pocket7878/reduxy'
 }

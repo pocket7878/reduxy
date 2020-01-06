@@ -21,7 +21,7 @@ Add dependency into your application-level `build.gradle`
 ```
 dependencies {
     ...
-    implementation 'jp.pocket7878.reduxy:reduxy:0.0.1'
+    implementation 'jp.pocket7878.reduxy:reduxy:0.0.2'
     ...
 }
 ```
