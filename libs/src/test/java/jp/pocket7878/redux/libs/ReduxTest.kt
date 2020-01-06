@@ -141,6 +141,17 @@ class ReduxTest {
     }
 
     @Test
+    fun navigateNotPublishEventWhichDispatchedBeforeSubscribe() {
+        val dummyNav = TestNavigation.Nav()
+
+        store.navigate(dummyNav)
+        val testObserver = store.navigation().test()
+        testObserver.assertEmpty()
+
+        testObserver.dispose()
+    }
+
+    @Test
     fun navigateNotAffectToState() {
         val testObserver = store.state().skip(1).test()
 
@@ -172,6 +183,15 @@ class ReduxTest {
         testObserver.assertValue {
             it.tag == TestErrorTag.ERROR1
         }
+
+        testObserver.dispose()
+    }
+
+    @Test
+    fun onErrorNotPublishEventBeforeSubscription() {
+        store.onError(TestErrorTag.ERROR1, null)
+        val testObserver = store.errors().test()
+        testObserver.assertEmpty()
 
         testObserver.dispose()
     }
